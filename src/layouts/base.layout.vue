@@ -40,7 +40,7 @@ const tools = computed<ToolCategory[]>(() => [
         <HeroGradient class="gradient" />
         <div class="text-wrapper">
           <div class="title">
-            <span class="bracket">[</span>IT-TOOLS<span class="bracket">]</span>
+            <span class="bracket">[</span>WHATISMYIPADD<span class="bracket">]</span>
           </div>
           <div class="divider" />
           <div class="subtitle">
@@ -126,7 +126,7 @@ const tools = computed<ToolCategory[]>(() => [
         <c-tooltip position="bottom" :tooltip="$t('home.support')">
           <c-button
             round
-            href="https://www.buymeacoffee.com/cthmsst"
+            href="https://buymeacoffee.com/reyc"
             rel="noopener"
             target="_blank"
             class="support-button"
