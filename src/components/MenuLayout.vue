@@ -24,6 +24,8 @@ const siderPosition = computed(() => (isSmallScreen.value ? 'absolute' : 'static
       <slot name="content" />
       <div v-show="isSmallScreen && !isMenuCollapsed" class="overlay" @click="isMenuCollapsed = true" />
     </n-layout>
+
+    <div class="jarvis-scanline-overlay" aria-hidden="true" />
   </n-layout>
 </template>
 
@@ -39,9 +41,14 @@ const siderPosition = computed(() => (isSmallScreen.value ? 'absolute' : 'static
 }
 
 .content {
-  // background-color: #f1f5f9;
   ::v-deep(.n-layout-scroll-container) {
     padding: 26px;
+    position: relative;
+    background-color: var(--jarvis-bg);
+    background-image: linear-gradient(rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+      radial-gradient(ellipse at 50% 50%, rgba(4, 9, 17, 0) 0%, rgba(1, 2, 3, 0.5) 62%, rgba(1, 2, 3, 0.97) 100%);
+    background-size: 40px 40px, 40px 40px, 100% 100%;
   }
 }
 

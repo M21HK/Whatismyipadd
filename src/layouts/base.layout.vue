@@ -8,6 +8,8 @@ import { storeToRefs } from 'pinia';
 import HeroGradient from '../assets/hero-gradient.svg?component';
 import MenuLayout from '../components/MenuLayout.vue';
 import NavbarButtons from '../components/NavbarButtons.vue';
+import SystemStatusWidget from '../components/SystemStatusWidget.vue';
+import NetworkDiagnosticsWidget from '../components/NetworkDiagnosticsWidget.vue';
 import { useStyleStore } from '@/stores/style.store';
 import { config } from '@/config';
 import type { ToolCategory } from '@/tools/tools.types';
@@ -39,11 +41,11 @@ const tools = computed<ToolCategory[]>(() => [
         <HeroGradient class="gradient" />
         <div class="text-wrapper">
           <div class="title">
-            IT - TOOLS
+            <span class="bracket">[</span>WHATISMYIPADD<span class="bracket">]</span>
           </div>
           <div class="divider" />
           <div class="subtitle">
-            {{ $t('home.subtitle') }}
+            <span class="prompt">&gt;</span> {{ $t('home.subtitle') }}
           </div>
         </div>
       </RouterLink>
@@ -58,6 +60,8 @@ const tools = computed<ToolCategory[]>(() => [
         </div>
 
         <CollapsibleToolMenu :tools-by-category="tools" />
+
+        <NetworkDiagnosticsWidget />
 
         <div class="footer">
           <div>
@@ -90,7 +94,7 @@ const tools = computed<ToolCategory[]>(() => [
     </template>
 
     <template #content>
-      <div flex items-center justify-center gap-2>
+      <div class="header-toolbar" flex items-center gap-2>
         <c-button
           circle
           variant="text"
@@ -106,24 +110,21 @@ const tools = computed<ToolCategory[]>(() => [
           </c-button>
         </c-tooltip>
 
-        <c-tooltip :tooltip="$t('home.uiLib')" position="bottom">
-          <c-button v-if="config.app.env === 'development'" to="/c-lib" circle variant="text" :aria-label="$t('home.uiLib')">
-            <icon-mdi:brush-variant text-20px />
-          </c-button>
-        </c-tooltip>
 
         <command-palette />
 
+        <SystemStatusWidget v-if="!styleStore.isSmallScreen" />
+
         <locale-selector v-if="!styleStore.isSmallScreen" />
 
-        <div>
+        <div class="utility-buttons">
           <NavbarButtons v-if="!styleStore.isSmallScreen" />
         </div>
 
         <c-tooltip position="bottom" :tooltip="$t('home.support')">
           <c-button
             round
-            href="https://www.buymeacoffee.com/cthmsst"
+            href="https://buymeacoffee.com/reyc"
             rel="noopener"
             target="_blank"
             class="support-button"
@@ -141,6 +142,56 @@ const tools = computed<ToolCategory[]>(() => [
 </template>
 
 <style lang="less" scoped>
+.header-toolbar {
+  width: 100%;
+  min-width: 0;
+  gap: 6px;
+  justify-content: flex-start;
+
+  :deep(.command-console) {
+    flex: 1 1 auto;
+    min-width: 220px;
+    max-width: min(620px, 34vw);
+  }
+
+  :deep(.system-status) {
+    flex: 0 0 auto;
+  }
+
+  .utility-buttons {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
+  :deep(.locale-selector),
+  :deep(.support-button),
+  :deep(.n-button) {
+    flex: 0 0 auto;
+  }
+
+  > :last-child {
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
+  @media (max-width: 1100px) {
+    :deep(.command-console) {
+      max-width: 26vw;
+    }
+
+    :deep(.status-clock) {
+      display: none;
+    }
+
+    :deep(.support-button) {
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+      font-size: 10px;
+    }
+  }
+}
+
 // ::v-deep(.n-layout-scroll-container) {
 //     @percent: 4%;
 //     @position: 25px;
@@ -153,13 +204,18 @@ const tools = computed<ToolCategory[]>(() => [
 // }
 
 .support-button {
-  background: rgb(37, 99, 108);
-  background: linear-gradient(48deg, rgba(37, 99, 108, 1) 0%, rgba(59, 149, 111, 1) 60%, rgba(20, 160, 88, 1) 100%);
-  color: #fff !important;
-  transition: padding ease 0.2s !important;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  color: var(--jarvis-amber) !important;
+  font-family: var(--jarvis-font-mono);
+  letter-spacing: 0.5px;
+  transition: all ease 0.2s !important;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 
   &:hover {
-    color: #fff;
+    color: var(--jarvis-amber);
+    background: rgba(245, 158, 11, 0.2);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
     padding-left: 30px;
     padding-right: 30px;
   }
@@ -167,9 +223,13 @@ const tools = computed<ToolCategory[]>(() => [
 
 .footer {
   text-align: center;
-  color: #838587;
+  color: #7c93a8;
+  font-family: var(--jarvis-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
   margin-top: 20px;
   padding: 20px 0;
+  border-top: 1px solid rgba(34, 211, 238, 0.12);
 }
 
 .sider-content {
@@ -187,6 +247,8 @@ const tools = computed<ToolCategory[]>(() => [
 
   .gradient {
     margin-top: -65px;
+    filter: grayscale(1) brightness(0.4) sepia(1) hue-rotate(150deg) saturate(4);
+    opacity: 0.85;
   }
 
   .text-wrapper {
@@ -195,23 +257,39 @@ const tools = computed<ToolCategory[]>(() => [
     width: 100%;
     text-align: center;
     top: 16px;
-    color: #fff;
+    color: #e6fbff;
+    font-family: var(--jarvis-font-mono);
 
     .title {
-      font-size: 25px;
-      font-weight: 600;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--jarvis-cyan);
+      text-shadow: 0 0 12px rgba(34, 211, 238, 0.65);
+
+      .bracket {
+        color: var(--jarvis-amber);
+        text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+      }
     }
 
     .divider {
       width: 50px;
-      height: 2px;
-      border-radius: 4px;
-      background-color: v-bind('themeVars.primaryColor');
-      margin: 0 auto 5px;
+      height: 1px;
+      border-radius: 0;
+      background-color: var(--jarvis-cyan);
+      box-shadow: 0 0 8px var(--jarvis-cyan);
+      margin: 6px auto 5px;
     }
 
     .subtitle {
-      font-size: 16px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      color: #7c93a8;
+
+      .prompt {
+        color: var(--jarvis-cyan);
+      }
     }
   }
 }
