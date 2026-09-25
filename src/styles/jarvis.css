@@ -1,0 +1,149 @@
+/*
+ * JARVIS-style shell theme.
+ * Deep space dark mode with neon cyan / electric amber accents,
+ * glassmorphism panels, glowing hairline borders and scanline overlays.
+ */
+
+:root {
+  --jarvis-black: #010203;
+  --jarvis-bg: #04060a;
+  --jarvis-panel: rgba(6, 12, 22, 0.55);
+  --jarvis-panel-strong: rgba(4, 9, 17, 0.8);
+  --jarvis-cyan: #22d3ee;
+  --jarvis-cyan-soft: rgba(34, 211, 238, 0.35);
+  --jarvis-cyan-dim: rgba(34, 211, 238, 0.14);
+  --jarvis-amber: #f59e0b;
+  --jarvis-amber-soft: rgba(245, 158, 11, 0.4);
+  --jarvis-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html.dark body {
+  background-color: var(--jarvis-bg);
+}
+
+/* Technical monospace typography on navigation, headers and structural chrome */
+html.dark .n-menu,
+html.dark .hero-wrapper,
+html.dark .category-header,
+html.dark .tool-header .n-h1,
+html.dark .n-h1,
+html.dark .n-h2,
+html.dark .n-h3,
+html.dark .system-status,
+html.dark .system-query {
+  font-family: var(--jarvis-font-mono);
+}
+
+/* ---------- Tactical grid / blueprint background ---------- */
+.jarvis-grid-bg {
+  background-color: var(--jarvis-bg);
+  background-image: linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% -10%, rgba(34, 211, 238, 0.1), transparent 55%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+}
+
+/* ---------- Fixed scanline overlay ---------- */
+.jarvis-scanline-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+.jarvis-scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(34, 211, 238, 0.06) 50%,
+    transparent 100%
+  );
+  animation: jarvis-scan-sweep 6s linear infinite;
+}
+
+@keyframes jarvis-scan-sweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* ---------- Glassmorphism panel ---------- */
+.jarvis-glass {
+  background: var(--jarvis-panel);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* ---------- Glow / pulse utilities ---------- */
+@keyframes jarvis-pulse-border {
+  0%,
+  100% {
+    box-shadow: inset 2px 0 0 0 var(--jarvis-cyan), 0 0 6px 0 rgba(34, 211, 238, 0.25);
+  }
+  50% {
+    box-shadow: inset 2px 0 0 0 var(--jarvis-cyan), 0 0 16px 2px rgba(34, 211, 238, 0.45);
+  }
+}
+
+@keyframes jarvis-pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(34, 211, 238, 0);
+  }
+}
+
+@keyframes jarvis-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.jarvis-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  transform: translateY(2px);
+  background: var(--jarvis-cyan);
+  box-shadow: 0 0 6px var(--jarvis-cyan), 0 0 2px var(--jarvis-cyan);
+  margin-left: 2px;
+  animation: jarvis-cursor-blink 1.1s steps(1, jump-none) infinite;
+}
+
+/* ---------- Selected tool link inside the nav menu ---------- */
+html.dark .n-menu .n-menu-item-content--selected::before {
+  background-color: var(--jarvis-cyan-dim) !important;
+  animation: jarvis-pulse-border 2.6s ease-in-out infinite;
+}
+
+html.dark .n-menu .n-menu-item-content--selected .n-menu-item-content-header,
+html.dark .n-menu .n-menu-item-content--selected .n-menu-item-content__icon {
+  color: var(--jarvis-cyan) !important;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
+}
+
+html.dark .n-menu .n-menu-item-content:not(.n-menu-item-content--selected):hover::before {
+  background-color: rgba(34, 211, 238, 0.07) !important;
+}

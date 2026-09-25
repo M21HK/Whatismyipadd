@@ -30,29 +30,41 @@ function toggleCategoryCollapse({ name }: { name: string }) {
 }
 
 const menuOptions = computed(() =>
-  toolsByCategory.value.map(({ name, components }) => ({
-    name,
-    isCollapsed: collapsedCategories.value[name],
-    tools: components.map(tool => ({
+  toolsByCategory.value.map(({ name, components }) => {
+    const tools = components.map(tool => ({
       label: makeLabel(tool),
       icon: makeIcon(tool),
       key: tool.path,
-    })),
-  })),
+    }));
+
+    return {
+      name,
+      isCollapsed: collapsedCategories.value[name],
+      isActive: tools.some(tool => tool.key === route.path),
+      tools,
+    };
+  }),
 );
 
 const themeVars = useThemeVars();
 </script>
 
 <template>
-  <div v-for="{ name, tools, isCollapsed } of menuOptions" :key="name">
-    <div ml-6px mt-12px flex cursor-pointer items-center op-60 @click="toggleCategoryCollapse({ name })">
+  <div v-for="{ name, tools, isCollapsed, isActive } of menuOptions" :key="name">
+    <div
+      ml-6px mt-12px flex cursor-pointer items-center
+      class="category-header" :class="{ 'is-active': isActive }"
+      @click="toggleCategoryCollapse({ name })"
+    >
       <span :class="{ 'rotate-0': isCollapsed, 'rotate-90': !isCollapsed }" text-16px lh-1 op-50 transition-transform>
         <icon-mdi-chevron-right />
       </span>
 
-      <span ml-8px text-13px>
+      <span ml-8px text-12px class="category-label">
+        <span class="bracket">[</span>
+        <span class="marker">{{ isActive ? '&gt;' : '·' }}</span>
         {{ name }}
+        <span class="bracket">]</span>
       </span>
     </div>
 
@@ -75,16 +87,70 @@ const themeVars = useThemeVars();
 </template>
 
 <style scoped lang="less">
+.category-header {
+  font-family: var(--jarvis-font-mono);
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.85 !important;
+  }
+
+  .category-label {
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #7c93a8;
+
+    .bracket {
+      color: rgba(124, 147, 168, 0.5);
+    }
+
+    .marker {
+      color: var(--jarvis-amber);
+      margin-right: 2px;
+    }
+  }
+
+  &.is-active {
+    .category-label {
+      color: var(--jarvis-cyan);
+      text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+
+      .bracket {
+        color: var(--jarvis-cyan);
+      }
+
+      .marker {
+        color: var(--jarvis-cyan);
+        animation: jarvis-pulse-dot 1.8s ease-in-out infinite;
+      }
+    }
+  }
+}
+
 .menu-wrapper {
   display: flex;
   flex-direction: row;
   .menu {
     flex: 1;
     margin-bottom: 5px;
+    font-family: var(--jarvis-font-mono);
 
     ::v-deep(.n-menu-item-content::before) {
       left: 0;
       right: 13px;
+      border-radius: 0 !important;
+    }
+
+    ::v-deep(.n-menu-item-content--selected) {
+      border-left: 2px solid var(--jarvis-cyan);
+
+      &::before {
+        box-shadow: -2px 0 10px rgba(34, 211, 238, 0.35);
+      }
+    }
+
+    ::v-deep(.n-menu-item-content-header) {
+      font-size: 13px;
     }
   }
 
