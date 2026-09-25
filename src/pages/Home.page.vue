@@ -23,7 +23,9 @@ function onUpdateFavoriteTools() {
 
 <template>
   <div class="pt-50px">
-    <div class="grid-wrapper">
+    <div class="grid-wrapper jarvis-grid-wrapper">
+      <div class="jarvis-radar-sweep" aria-hidden="true" />
+
       <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
         <ColoredCard v-if="config.showBanner" :title="$t('home.follow.title')" :icon="IconHeart">
           {{ $t('home.follow.p1') }}
@@ -47,7 +49,7 @@ function onUpdateFavoriteTools() {
 
       <transition name="height">
         <div v-if="toolStore.favoriteTools.length > 0">
-          <h3 class="mb-5px mt-25px text-neutral-400 font-500">
+          <h3 class="jarvis-section-title mb-5px mt-25px">
             {{ $t('home.categories.favoriteTools') }}
             <c-tooltip :tooltip="$t('home.categories.favoritesDndToolTip')">
               <n-icon :component="IconDragDrop" size="18" />
@@ -55,7 +57,7 @@ function onUpdateFavoriteTools() {
           </h3>
           <Draggable
             :list="favoriteTools"
-            class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4"
+            class="jarvis-tool-grid"
             ghost-class="ghost-favorites-draggable"
             item-key="name"
             @end="onUpdateFavoriteTools"
@@ -68,18 +70,18 @@ function onUpdateFavoriteTools() {
       </transition>
 
       <div v-if="toolStore.newTools.length > 0">
-        <h3 class="mb-5px mt-25px text-neutral-400 font-500">
+        <h3 class="jarvis-section-title mb-5px mt-25px">
           {{ t('home.categories.newestTools') }}
         </h3>
-        <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="jarvis-tool-grid">
           <ToolCard v-for="tool in toolStore.newTools" :key="tool.name" :tool="tool" />
         </div>
       </div>
 
-      <h3 class="mb-5px mt-25px text-neutral-400 font-500">
+      <h3 class="jarvis-section-title mb-5px mt-25px">
         {{ $t('home.categories.allTools') }}
       </h3>
-      <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="jarvis-tool-grid">
         <ToolCard v-for="tool in toolStore.tools" :key="tool.name" :tool="tool" />
       </div>
     </div>

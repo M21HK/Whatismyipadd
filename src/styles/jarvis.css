@@ -147,3 +147,74 @@ html.dark .n-menu .n-menu-item-content--selected .n-menu-item-content__icon {
 html.dark .n-menu .n-menu-item-content:not(.n-menu-item-content--selected):hover::before {
   background-color: rgba(34, 211, 238, 0.07) !important;
 }
+
+/* ---------- Home grid: section titles ---------- */
+.jarvis-section-title {
+  font-family: var(--jarvis-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--jarvis-cyan);
+  text-shadow: 0 0 6px rgba(34, 211, 238, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jarvis-section-title::before {
+  content: '>';
+  color: var(--jarvis-amber);
+}
+
+/* ---------- Dense data-node grid ---------- */
+.jarvis-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+/* ---------- Radar sweep passing beneath the tool grid ---------- */
+.jarvis-grid-wrapper {
+  position: relative;
+}
+
+.jarvis-radar-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -140px;
+  height: 140px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(34, 211, 238, 0.14),
+    rgba(34, 211, 238, 0.05),
+    transparent
+  );
+  animation: jarvis-radar-sweep-move 10s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+@keyframes jarvis-radar-sweep-move {
+  0% {
+    top: -140px;
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  45% {
+    opacity: 0.9;
+  }
+  55% {
+    opacity: 0;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
