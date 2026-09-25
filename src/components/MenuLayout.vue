@@ -45,9 +45,9 @@ const siderPosition = computed(() => (isSmallScreen.value ? 'absolute' : 'static
     padding: 26px;
     position: relative;
     background-color: var(--jarvis-bg);
-    background-image: linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px),
-      radial-gradient(ellipse at 50% -10%, rgba(34, 211, 238, 0.1), transparent 55%);
+    background-image: linear-gradient(rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+      radial-gradient(ellipse at 50% 50%, rgba(4, 9, 17, 0) 0%, rgba(1, 2, 3, 0.5) 62%, rgba(1, 2, 3, 0.97) 100%);
     background-size: 40px 40px, 40px 40px, 100% 100%;
   }
 }

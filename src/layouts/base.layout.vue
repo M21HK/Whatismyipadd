@@ -9,6 +9,7 @@ import HeroGradient from '../assets/hero-gradient.svg?component';
 import MenuLayout from '../components/MenuLayout.vue';
 import NavbarButtons from '../components/NavbarButtons.vue';
 import SystemStatusWidget from '../components/SystemStatusWidget.vue';
+import NetworkDiagnosticsWidget from '../components/NetworkDiagnosticsWidget.vue';
 import { useStyleStore } from '@/stores/style.store';
 import { config } from '@/config';
 import type { ToolCategory } from '@/tools/tools.types';
@@ -59,6 +60,8 @@ const tools = computed<ToolCategory[]>(() => [
         </div>
 
         <CollapsibleToolMenu :tools-by-category="tools" />
+
+        <NetworkDiagnosticsWidget />
 
         <div class="footer">
           <div>

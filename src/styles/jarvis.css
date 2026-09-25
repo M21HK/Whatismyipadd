@@ -37,9 +37,9 @@ html.dark .system-query {
 /* ---------- Tactical grid / blueprint background ---------- */
 .jarvis-grid-bg {
   background-color: var(--jarvis-bg);
-  background-image: linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px),
-    radial-gradient(ellipse at 50% -10%, rgba(34, 211, 238, 0.1), transparent 55%);
+  background-image: linear-gradient(rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 50%, rgba(4, 9, 17, 0) 0%, rgba(1, 2, 3, 0.55) 65%, rgba(1, 2, 3, 0.96) 100%);
   background-size: 40px 40px, 40px 40px, 100% 100%;
 }
 
@@ -178,6 +178,30 @@ html.dark .n-menu .n-menu-item-content:not(.n-menu-item-content--selected):hover
 /* ---------- Radar sweep passing beneath the tool grid ---------- */
 .jarvis-grid-wrapper {
   position: relative;
+}
+
+/* ---------- Massive faint centerpiece radar behind the tool grid ---------- */
+.jarvis-centerpiece-radar {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(90vw, 90vh, 1100px);
+  height: min(90vw, 90vh, 1100px);
+  transform: translate(-50%, -50%);
+  color: var(--jarvis-cyan);
+  opacity: 0.05;
+  z-index: 0;
+  pointer-events: none;
+  animation: jarvis-radar-spin 60s linear infinite;
+}
+
+@keyframes jarvis-radar-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 .jarvis-radar-sweep {
