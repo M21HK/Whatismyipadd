@@ -9,7 +9,23 @@ const interval = setInterval(() => {
   clock.value = formatTime(new Date());
 }, 1000);
 
-onBeforeUnmount(() => clearInterval(interval));
+function generateTelemetry() {
+  const bits = () => Array.from({ length: 8 }, () => Math.round(Math.random())).join('');
+  const ping = () => `PING:${Math.floor(Math.random() * 70 + 8)}ms`;
+
+  return Array.from({ length: 8 }, () => (Math.random() > 0.4 ? bits() : ping())).join(' ');
+}
+
+const telemetry = ref(generateTelemetry());
+
+const telemetryInterval = setInterval(() => {
+  telemetry.value = generateTelemetry();
+}, 4000);
+
+onBeforeUnmount(() => {
+  clearInterval(interval);
+  clearInterval(telemetryInterval);
+});
 </script>
 
 <template>
@@ -19,6 +35,11 @@ onBeforeUnmount(() => clearInterval(interval));
       <span class="status-label">SYSTEM STATUS</span>
       <span class="status-value">ONLINE</span>
     </div>
+
+    <div class="status-telemetry" aria-hidden="true">
+      <span class="telemetry-track">{{ telemetry }}&nbsp;&nbsp;&nbsp;&nbsp;{{ telemetry }}</span>
+    </div>
+
     <span class="status-clock">{{ clock }}</span>
   </div>
 </template>
@@ -70,6 +91,39 @@ onBeforeUnmount(() => clearInterval(interval));
   border-left: 1px solid rgba(245, 158, 11, 0.3);
   padding-left: 10px;
   letter-spacing: 0.5px;
+}
+
+.status-telemetry {
+  width: 84px;
+  overflow: hidden;
+  border-left: 1px solid rgba(34, 211, 238, 0.25);
+  border-right: 1px solid rgba(34, 211, 238, 0.25);
+  padding: 0 8px;
+  mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+}
+
+.telemetry-track {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: #4a6478;
+  animation: jarvis-telemetry-scroll 7s linear infinite;
+}
+
+@keyframes jarvis-telemetry-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 900px) {
+  .status-telemetry {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {

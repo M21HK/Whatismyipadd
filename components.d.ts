@@ -130,6 +130,7 @@ declare module '@vue/runtime-core' {
     MimeTypes: typeof import('./src/tools/mime-types/mime-types.vue')['default']
     NavbarButtons: typeof import('./src/components/NavbarButtons.vue')['default']
     NCollapseTransition: typeof import('naive-ui')['NCollapseTransition']
+    NColorPicker: typeof import('naive-ui')['NColorPicker']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NDivider: typeof import('naive-ui')['NDivider']
     NEllipsis: typeof import('naive-ui')['NEllipsis']

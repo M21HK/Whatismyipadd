@@ -5,6 +5,7 @@ import { useCommandPaletteStore } from './command-palette.store';
 import type { PaletteOption } from './command-palette.types';
 
 const isModalOpen = ref(false);
+const isGlitching = ref(false);
 const inputRef = ref();
 const router = useRouter();
 const isMac = computed(() => window.navigator.userAgent.toLowerCase().includes('mac'));
@@ -32,7 +33,16 @@ whenever(keys.meta_k, open);
 whenever(keys.escape, close);
 
 function open() {
-  return isModalOpen.value = true;
+  if (isGlitching.value) {
+    return;
+  }
+
+  isGlitching.value = true;
+
+  setTimeout(() => {
+    isGlitching.value = false;
+    isModalOpen.value = true;
+  }, 180);
 }
 
 function close() {
@@ -112,11 +122,18 @@ function activateOption(option: PaletteOption) {
 
 <template>
   <div flex-1>
-    <c-button w-full important:justify-start class="query-trigger" @click="isModalOpen = true">
-      <span flex items-center gap-3 w-full>
-        <span class="query-prompt">&gt;_</span>
-        <span class="query-label">{{ $t('search.label') }}</span>
-        <span class="terminal-cursor" aria-hidden="true" />
+    <c-button w-full important:justify-start class="query-trigger" @click="open">
+      <span flex items-center gap-2 w-full>
+        <span class="console-bracket" aria-hidden="true">&gt;</span>
+
+        <span class="console-input-area">
+          <span class="console-placeholder" :class="{ 'is-glitching': isGlitching }" :data-text="$t('search.label')">
+            {{ isGlitching ? '█▓▒░01░▓█_CMD_ERR░▒▓█' : 'AWAITING_COMMAND_INPUT_' }}
+          </span>
+          <span class="terminal-cursor" aria-hidden="true" />
+        </span>
+
+        <span class="console-bracket" aria-hidden="true">&lt;</span>
 
         <span hidden flex-1 border border-current border-op-40 rounded border-solid px-5px py-3px sm:inline class="query-shortcut">
           {{ isMac ? 'Cmd' : 'Ctrl' }}&nbsp;+&nbsp;K
@@ -127,7 +144,7 @@ function activateOption(option: PaletteOption) {
     <c-modal v-model:open="isModalOpen" class="palette-modal" shadow-xl important:max-w-650px important:pa-12px @keydown="handleKeydown">
       <div class="terminal-input-wrapper">
         <span class="terminal-input-prompt">&gt;_</span>
-        <c-input-text ref="inputRef" v-model:value="searchPrompt" raw-text placeholder="Type to search a tool or a command..." autofocus clearable />
+        <c-input-text ref="inputRef" v-model:value="searchPrompt" raw-text placeholder="AWAITING_COMMAND_INPUT_" autofocus clearable />
       </div>
 
       <div v-for="(options, category) in filteredSearchResult" :key="category">
@@ -143,23 +160,61 @@ function activateOption(option: PaletteOption) {
 <style scoped lang="less">
 .query-trigger {
   font-family: var(--jarvis-font-mono);
-  border: 1px solid rgba(34, 211, 238, 0.25) !important;
-  background: rgba(34, 211, 238, 0.04) !important;
+  border: none !important;
+  background: transparent !important;
+  transition: filter 0.15s ease;
 
   &:hover {
-    border-color: rgba(34, 211, 238, 0.5) !important;
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+    filter: brightness(1.15);
   }
 }
 
-.query-prompt {
+.console-bracket {
   color: var(--jarvis-cyan);
   font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  text-shadow:
+    0 0 4px var(--jarvis-cyan),
+    0 0 10px var(--jarvis-cyan),
+    0 0 18px rgba(34, 211, 238, 0.6);
+  transition: text-shadow 0.15s ease;
 }
 
-.query-label {
+.query-trigger:hover .console-bracket {
+  text-shadow:
+    0 0 6px var(--jarvis-cyan),
+    0 0 16px var(--jarvis-cyan),
+    0 0 28px rgba(34, 211, 238, 0.8);
+}
+
+.console-input-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 10px;
+  border-top: 1px solid rgba(34, 211, 238, 0.18);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.18);
+  background: rgba(34, 211, 238, 0.03);
+}
+
+.console-placeholder {
   color: #7c93a8;
   letter-spacing: 0.5px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.is-glitching {
+    color: var(--jarvis-amber);
+    animation: jarvis-glitch 0.18s steps(2, jump-none) infinite;
+    text-shadow:
+      2px 0 rgba(34, 211, 238, 0.8),
+      -2px 0 rgba(245, 158, 11, 0.8);
+  }
 }
 
 .terminal-cursor {
@@ -215,6 +270,33 @@ function activateOption(option: PaletteOption) {
   }
   50.01%, 100% {
     opacity: 0;
+  }
+}
+
+@keyframes jarvis-glitch {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-2px, 1px);
+    opacity: 0.7;
+  }
+  40% {
+    transform: translate(2px, -1px);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-1px, 0);
+    opacity: 0.6;
+  }
+  80% {
+    transform: translate(1px, 1px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.85;
   }
 }
 </style>
