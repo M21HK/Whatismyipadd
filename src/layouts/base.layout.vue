@@ -94,7 +94,7 @@ const tools = computed<ToolCategory[]>(() => [
     </template>
 
     <template #content>
-      <div flex items-center justify-center gap-2>
+      <div class="header-toolbar" flex items-center gap-2>
         <c-button
           circle
           variant="text"
@@ -117,7 +117,7 @@ const tools = computed<ToolCategory[]>(() => [
 
         <locale-selector v-if="!styleStore.isSmallScreen" />
 
-        <div>
+        <div class="utility-buttons">
           <NavbarButtons v-if="!styleStore.isSmallScreen" />
         </div>
 
@@ -142,6 +142,56 @@ const tools = computed<ToolCategory[]>(() => [
 </template>
 
 <style lang="less" scoped>
+.header-toolbar {
+  width: 100%;
+  min-width: 0;
+  gap: 6px;
+  justify-content: flex-start;
+
+  :deep(.command-console) {
+    flex: 1 1 auto;
+    min-width: 220px;
+    max-width: min(620px, 34vw);
+  }
+
+  :deep(.system-status) {
+    flex: 0 0 auto;
+  }
+
+  .utility-buttons {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
+  :deep(.locale-selector),
+  :deep(.support-button),
+  :deep(.n-button) {
+    flex: 0 0 auto;
+  }
+
+  > :last-child {
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
+  @media (max-width: 1100px) {
+    :deep(.command-console) {
+      max-width: 26vw;
+    }
+
+    :deep(.status-clock) {
+      display: none;
+    }
+
+    :deep(.support-button) {
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+      font-size: 10px;
+    }
+  }
+}
+
 // ::v-deep(.n-layout-scroll-container) {
 //     @percent: 4%;
 //     @position: 25px;

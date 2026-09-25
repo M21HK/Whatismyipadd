@@ -121,7 +121,7 @@ function activateOption(option: PaletteOption) {
 </script>
 
 <template>
-  <div flex-1>
+  <div flex-1 class="command-console">
     <c-button w-full important:justify-start class="query-trigger" @click="open">
       <span flex items-center gap-2 w-full>
         <span class="console-bracket" aria-hidden="true">&gt;</span>
@@ -189,7 +189,7 @@ function activateOption(option: PaletteOption) {
 }
 
 .console-input-area {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   gap: 6px;
