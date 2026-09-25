@@ -52,6 +52,9 @@ function stopDecrypt() {
 }
 
 onBeforeUnmount(stopDecrypt);
+
+// Static "memory address" tag rendered once per card, simulating a HUD readout.
+const memoryAddress = `0x${randomHex(4)}`;
 </script>
 
 <template>
@@ -61,30 +64,39 @@ onBeforeUnmount(stopDecrypt);
     @mouseenter="startDecrypt"
     @mouseleave="stopDecrypt"
   >
-    <div class="jarvis-tool-card h-full">
-      <button
-        type="button"
-        class="jarvis-pin"
-        :class="{ 'jarvis-pin--active': isFavorite }"
-        :aria-label="isFavorite ? $t('favoriteButton.remove') : $t('favoriteButton.add')"
-        @click="togglePin"
-      >
-        <IconTarget :size="15" :stroke-width="2" />
-      </button>
+    <div class="jarvis-tool-frame h-full">
+      <div class="jarvis-tool-card h-full">
+        <span class="jarvis-corner jarvis-corner--tl" aria-hidden="true">+</span>
+        <span class="jarvis-corner jarvis-corner--br" aria-hidden="true">+</span>
 
-      <div class="jarvis-tool-icon-row">
-        <n-icon class="jarvis-tool-icon" size="30" :component="tool.icon" />
-        <span v-if="tool.isNew" class="jarvis-new-badge">{{ $t('toolCard.new') }}</span>
+        <span class="jarvis-mem-address" aria-hidden="true">{{ memoryAddress }}</span>
+
+        <button
+          type="button"
+          class="jarvis-pin"
+          :class="{ 'jarvis-pin--active': isFavorite }"
+          :aria-label="isFavorite ? $t('favoriteButton.remove') : $t('favoriteButton.add')"
+          @click="togglePin"
+        >
+          <IconTarget :size="15" :stroke-width="2" />
+        </button>
+
+        <div class="jarvis-tool-icon-row">
+          <n-icon class="jarvis-tool-icon" size="30" :component="tool.icon" />
+          <span v-if="tool.isNew" class="jarvis-new-badge">{{ $t('toolCard.new') }}</span>
+        </div>
+
+        <div class="jarvis-tool-title-row">
+          <span class="jarvis-tool-title">{{ tool.name }}</span>
+          <span class="jarvis-decrypt">{{ decryptText }}</span>
+        </div>
+
+        <p class="jarvis-tool-desc">
+          {{ tool.description }}
+        </p>
+
+        <span class="jarvis-scan-sweep" aria-hidden="true" />
       </div>
-
-      <div class="jarvis-tool-title-row">
-        <span class="jarvis-tool-title">{{ tool.name }}</span>
-        <span class="jarvis-decrypt">{{ decryptText }}</span>
-      </div>
-
-      <p class="jarvis-tool-desc">
-        {{ tool.description }}
-      </p>
     </div>
   </router-link>
 </template>
@@ -93,6 +105,45 @@ onBeforeUnmount(stopDecrypt);
 .jarvis-tool-link {
   display: block;
   height: 100%;
+  transition: filter 0.3s ease;
+
+  &:hover {
+    filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.45)) drop-shadow(0 0 26px rgba(34, 211, 238, 0.28));
+  }
+}
+
+// Chamfered outer frame: hosts the fading gradient "border" and clips the
+// inner panel to the same angled silhouette (top-right / bottom-left cut).
+.jarvis-tool-frame {
+  --jarvis-chamfer: 16px;
+  position: relative;
+  padding: 1px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--jarvis-chamfer)) 0,
+    100% var(--jarvis-chamfer),
+    100% 100%,
+    var(--jarvis-chamfer) 100%,
+    0 calc(100% - var(--jarvis-chamfer))
+  );
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.55) 0%,
+    rgba(34, 211, 238, 0.08) 35%,
+    rgba(245, 158, 11, 0.12) 65%,
+    rgba(34, 211, 238, 0.4) 100%
+  );
+  transition: background 0.25s ease;
+}
+
+.jarvis-tool-link:hover .jarvis-tool-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.9) 0%,
+    rgba(34, 211, 238, 0.2) 35%,
+    rgba(245, 158, 11, 0.25) 65%,
+    rgba(34, 211, 238, 0.75) 100%
+  );
 }
 
 .jarvis-tool-card {
@@ -102,13 +153,19 @@ onBeforeUnmount(stopDecrypt);
   flex-direction: column;
   gap: 10px;
   padding: 16px 18px;
-  border: 1px solid rgba(34, 211, 238, 0.22);
   background: var(--jarvis-panel);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border-radius: 2px;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 15px) 0,
+    100% 15px,
+    100% 100%,
+    15px 100%,
+    0 calc(100% - 15px)
+  );
   overflow: hidden;
+  transition: transform 0.25s ease;
 
   &::before {
     content: '';
@@ -119,22 +176,101 @@ onBeforeUnmount(stopDecrypt);
     transition: opacity 0.25s ease;
     pointer-events: none;
   }
+}
 
-  &:hover {
-    border-color: var(--jarvis-cyan);
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
-    transform: translateY(-1px);
+.jarvis-tool-link:hover .jarvis-tool-card {
+  transform: translateY(-1px);
 
-    &::before {
-      opacity: 1;
-    }
+  &::before {
+    opacity: 1;
   }
+}
+
+// Quick top-to-bottom scanline sweep, replayed each time the pointer enters.
+.jarvis-scan-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -30%;
+  height: 30%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(34, 211, 238, 0.5),
+    rgba(255, 255, 255, 0.35),
+    rgba(34, 211, 238, 0.5),
+    transparent
+  );
+  opacity: 0;
+}
+
+.jarvis-tool-link:hover .jarvis-scan-sweep {
+  animation: jarvis-card-scan 0.6s ease-in-out;
+}
+
+@keyframes jarvis-card-scan {
+  0% {
+    top: -30%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+// Decorative crosshair ticks on the two right-angle corners.
+.jarvis-corner {
+  position: absolute;
+  z-index: 2;
+  font-family: var(--jarvis-font-mono);
+  font-size: 10px;
+  line-height: 1;
+  color: rgba(34, 211, 238, 0.35);
+  pointer-events: none;
+  transition: color 0.25s ease;
+}
+
+.jarvis-corner--tl {
+  top: 2px;
+  left: 3px;
+}
+
+.jarvis-corner--br {
+  bottom: 2px;
+  right: 3px;
+}
+
+.jarvis-tool-link:hover .jarvis-corner {
+  color: rgba(34, 211, 238, 0.75);
+}
+
+// Simulated "memory address" readout in the top right.
+.jarvis-mem-address {
+  position: absolute;
+  top: 6px;
+  right: 40px;
+  z-index: 2;
+  font-family: var(--jarvis-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: #4b5c6b;
+  pointer-events: none;
 }
 
 .jarvis-pin {
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,7 +310,7 @@ onBeforeUnmount(stopDecrypt);
   transition: transform 0.4s ease;
 }
 
-.jarvis-tool-card:hover .jarvis-tool-icon {
+.jarvis-tool-link:hover .jarvis-tool-icon {
   animation: jarvis-icon-pulse 1.1s ease-in-out infinite;
 }
 
@@ -229,7 +365,7 @@ onBeforeUnmount(stopDecrypt);
   transition: opacity 0.15s ease;
 }
 
-.jarvis-tool-card:hover .jarvis-decrypt {
+.jarvis-tool-link:hover .jarvis-decrypt {
   opacity: 0.85;
 }
 
