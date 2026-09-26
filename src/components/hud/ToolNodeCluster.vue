@@ -11,7 +11,11 @@ const props = defineProps<{
   pulsing?: boolean
 }>();
 
-const emit = defineEmits<{ (e: 'hover-start'): void; (e: 'hover-end'): void }>();
+const emit = defineEmits<{
+  (e: 'hover-start'): void
+  (e: 'hover-end'): void
+  (e: 'select', tool: Tool): void
+}>();
 
 // Large categories (Converter, Web, ...) render dozens of nodes, which would
 // collide with neighboring clusters on the radial map. Cap what's shown up
@@ -42,6 +46,7 @@ const overflowCount = computed(() => Math.max(0, props.tools.length - MAX_VISIBL
         :tool="tool"
         @hover-start="emit('hover-start')"
         @hover-end="emit('hover-end')"
+        @select="emit('select', $event)"
       />
       <button
         v-if="overflowCount > 0 && !showAll"

@@ -3,7 +3,11 @@ import { onBeforeUnmount, ref } from 'vue';
 import type { Tool } from '@/tools/tools.types';
 
 defineProps<{ tool: Tool }>();
-const emit = defineEmits<{ (e: 'hover-start'): void; (e: 'hover-end'): void }>();
+const emit = defineEmits<{
+  (e: 'hover-start'): void
+  (e: 'hover-end'): void
+  (e: 'select', tool: Tool): void
+}>();
 
 // Same "data decryption" hex-flash effect used on ToolCard, scaled down for
 // the compact node label.
@@ -49,11 +53,17 @@ function onLeave() {
 </script>
 
 <template>
-  <router-link :to="tool.path" class="hex-node" @mouseenter="onEnter" @mouseleave="onLeave">
+  <button
+    type="button"
+    class="hex-node"
+    @click="emit('select', tool)"
+    @mouseenter="onEnter"
+    @mouseleave="onLeave"
+  >
     <n-icon class="hex-node-icon" size="16" :component="tool.icon" />
     <span class="hex-node-label">{{ tool.name }}</span>
     <span class="hex-node-scramble" aria-hidden="true">{{ scrambleText }}</span>
-  </router-link>
+  </button>
 </template>
 
 <style scoped lang="less">
@@ -63,12 +73,16 @@ function onLeave() {
   align-items: center;
   gap: 6px;
   padding: 6px 10px 6px 8px;
+  appearance: none;
   background: rgba(4, 9, 17, 0.6);
   border: 1px solid rgba(34, 211, 238, 0.25);
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   color: #cfe9f1;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {

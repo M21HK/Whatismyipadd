@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
+// Compact mode renders a shrunken version of the core for the docked
+// control rail shown once a tool workspace is open - same live telemetry,
+// smaller footprint, network traffic readout dropped to save vertical space.
+defineProps<{ compact?: boolean }>();
+
 // Mock "System Load" sine wave: a handful of points redrawn on an interval
 // with a slowly advancing phase plus small random jitter, so the trace
 // looks alive without pulling in a charting library (this app is Vue, not
@@ -48,7 +53,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="reactor-core">
+  <div class="reactor-core" :class="{ compact }">
     <div class="reactor-radar" aria-hidden="true">
       <svg viewBox="0 0 200 200" width="100%" height="100%">
         <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5" />
@@ -79,7 +84,7 @@ onBeforeUnmount(() => {
         </svg>
       </div>
 
-      <div class="readout">
+      <div v-if="!compact" class="readout">
         <div class="readout-label">
           <span class="bracket">[</span>NETWORK TRAFFIC<span class="bracket">]</span>
         </div>
@@ -107,6 +112,25 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 14px;
   pointer-events: none;
+  transition: gap 0.4s ease;
+
+  &.compact {
+    gap: 8px;
+
+    .reactor-radar {
+      width: 64px;
+      height: 64px;
+      filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.45));
+    }
+
+    .readout {
+      width: 100%;
+    }
+
+    .readout-label {
+      font-size: 7px;
+    }
+  }
 }
 
 .reactor-radar {
@@ -114,6 +138,7 @@ onBeforeUnmount(() => {
   height: 190px;
   color: var(--jarvis-cyan);
   filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.45));
+  transition: width 0.4s ease, height 0.4s ease;
 }
 
 .reactor-sweep-group {
