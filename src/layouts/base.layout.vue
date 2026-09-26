@@ -177,7 +177,8 @@ const tools = computed<ToolCategory[]>(() => [
 
   @media (max-width: 1100px) {
     :deep(.command-console) {
-      max-width: 26vw;
+      min-width: 128px;
+      max-width: 22vw;
     }
 
     :deep(.status-clock) {
@@ -185,9 +186,12 @@ const tools = computed<ToolCategory[]>(() => [
     }
 
     :deep(.support-button) {
-      padding-left: 8px !important;
-      padding-right: 8px !important;
-      font-size: 10px;
+      max-width: 116px;
+      overflow: hidden;
+      padding-left: 6px !important;
+      padding-right: 6px !important;
+      font-size: 9px;
+      white-space: nowrap;
     }
   }
 }
@@ -202,6 +206,17 @@ const tools = computed<ToolCategory[]>(() => [
 //     background-position: 0 0, @position @position;
 //     background-size: @size @size;
 // }
+
+.menu-layout.isSmallScreen {
+  :deep(.n-layout-sider),
+  :deep(.n-layout-sider--show-collapsed) {
+    display: none;
+  }
+
+  :deep(.n-layout-content) {
+    margin-left: 0 !important;
+  }
+}
 
 .support-button {
   background: rgba(245, 158, 11, 0.12);
