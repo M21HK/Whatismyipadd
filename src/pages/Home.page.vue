@@ -1,140 +1,245 @@
 <script setup lang="ts">
-import { IconDragDrop, IconHeart } from '@tabler/icons-vue';
 import { useHead } from '@vueuse/head';
-import { computed } from 'vue';
-import Draggable from 'vuedraggable';
-import ColoredCard from '../components/ColoredCard.vue';
-import ToolCard from '../components/ToolCard.vue';
+import { useMediaQuery } from '@vueuse/core';
+import { storeToRefs } from 'pinia';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import AdPanel from '../components/hud/AdPanel.vue';
+import ReactorCore from '../components/hud/ReactorCore.vue';
+import ToolNodeCluster from '../components/hud/ToolNodeCluster.vue';
 import { useToolStore } from '@/tools/tools.store';
-import { config } from '@/config';
-
-const toolStore = useToolStore();
+import { useStyleStore } from '@/stores/style.store';
 
 useHead({ title: 'IT Tools - Handy online tools for developers' });
 const { t } = useI18n();
 
-const favoriteTools = computed(() => toolStore.favoriteTools);
+const toolStore = useToolStore();
+const styleStore = useStyleStore();
+const { favoriteTools, toolsByCategory } = storeToRefs(toolStore);
 
-// Update favorite tools order when drag is finished
-function onUpdateFavoriteTools() {
-  toolStore.updateFavoriteTools(favoriteTools.value); // Update the store with the new order
-}
+// Full-bleed cinematic view: auto-collapse the sidebar when landing on the
+// topology map. The header toggle still brings it back at any time, and
+// tool detail pages are unaffected since they mount their own layout state.
+const wasMenuCollapsedOnMount = styleStore.isMenuCollapsed;
+onMounted(() => {
+  styleStore.isMenuCollapsed = true;
+});
+onBeforeUnmount(() => {
+  styleStore.isMenuCollapsed = wasMenuCollapsedOnMount;
+});
+
+const clusters = computed(() => [
+  ...(favoriteTools.value.length > 0
+    ? [{ name: t('home.categories.favoriteTools'), components: favoriteTools.value }]
+    : []),
+  ...toolsByCategory.value,
+]);
+
+const clusterPositions = computed(() => {
+  const total = clusters.value.length;
+
+  return clusters.value.map((cluster, index) => {
+    // Alternate near/far radii so adjacent clusters (which sit close
+    // together angularly) don't collide, and push larger categories
+    // further out since they render wider node groups.
+    const baseRadius = index % 2 === 0 ? 38 : 46;
+    const radius = cluster.components.length > 8 ? baseRadius + 4 : baseRadius;
+    const angle = (index * (360 / total) - 90) * (Math.PI / 180);
+    return {
+      ...cluster,
+      x: 50 + radius * Math.cos(angle),
+      y: 50 + radius * Math.sin(angle),
+    };
+  });
+});
+
+const hoveredIndex = ref<number | null>(null);
+
+// Below this width the radial layout math no longer degrades gracefully
+// (labels collide, connector lines cross the reactor core), so fall back to
+// a simple stacked list of cluster panels instead.
+const isWideEnoughForRadial = useMediaQuery('(min-width: 1100px)');
 </script>
 
 <template>
-  <div class="pt-50px">
-    <div class="grid-wrapper jarvis-grid-wrapper">
-      <div class="jarvis-centerpiece-radar" aria-hidden="true">
-        <svg viewBox="0 0 400 400" width="100%" height="100%">
-          <circle cx="200" cy="200" r="196" fill="none" stroke="currentColor" stroke-width="1" />
-          <circle cx="200" cy="200" r="150" fill="none" stroke="currentColor" stroke-width="1" />
-          <circle cx="200" cy="200" r="104" fill="none" stroke="currentColor" stroke-width="1" />
-          <circle cx="200" cy="200" r="58" fill="none" stroke="currentColor" stroke-width="1" />
-          <line x1="200" y1="4" x2="200" y2="396" stroke="currentColor" stroke-width="1" />
-          <line x1="4" y1="200" x2="396" y2="200" stroke="currentColor" stroke-width="1" />
-          <line x1="60" y1="60" x2="340" y2="340" stroke="currentColor" stroke-width="1" />
-          <line x1="340" y1="60" x2="60" y2="340" stroke="currentColor" stroke-width="1" />
-          <path d="M 200 200 L 200 4 A 196 196 0 0 1 338.6 61.4 Z" fill="currentColor" opacity="0.6" />
+  <div class="hud-stage-vignette" aria-hidden="true" />
+
+  <div class="hud-page">
+    <AdPanel variant="horizontal" class="hud-ad-top" />
+
+    <div class="hud-body">
+      <div v-if="isWideEnoughForRadial" class="hud-stage">
+        <svg class="hud-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line
+            v-for="(cluster, index) in clusterPositions"
+            :key="`line-${cluster.name}`"
+            class="hud-connector"
+            :class="{ pulsing: hoveredIndex === index }"
+            x1="50"
+            y1="50"
+            :x2="cluster.x"
+            :y2="cluster.y"
+          />
         </svg>
-      </div>
 
-      <div class="jarvis-radar-sweep" aria-hidden="true" />
-
-      <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-4">
-        <ColoredCard v-if="config.showBanner" :title="$t('home.follow.title')" :icon="IconHeart">
-          {{ $t('home.follow.p1') }}
-          <a
-            href="https://github.com/CorentinTh/it-tools"
-            rel="noopener"
-            target="_blank"
-            :aria-label="$t('home.follow.githubRepository')"
-          >GitHub</a>
-          {{ $t('home.follow.p2') }}
-          <a
-            href="https://x.com/ittoolsdottech"
-            rel="noopener"
-            target="_blank"
-            :aria-label="$t('home.follow.twitterXAccount')"
-          >X</a>.
-          {{ $t('home.follow.thankYou') }}
-          <n-icon :component="IconHeart" />
-        </ColoredCard>
-      </div>
-
-      <transition name="height">
-        <div v-if="toolStore.favoriteTools.length > 0">
-          <h3 class="jarvis-section-title mb-5px mt-25px">
-            {{ $t('home.categories.favoriteTools') }}
-            <c-tooltip :tooltip="$t('home.categories.favoritesDndToolTip')">
-              <n-icon :component="IconDragDrop" size="18" />
-            </c-tooltip>
-          </h3>
-          <Draggable
-            :list="favoriteTools"
-            class="jarvis-tool-grid"
-            ghost-class="ghost-favorites-draggable"
-            item-key="name"
-            @end="onUpdateFavoriteTools"
-          >
-            <template #item="{ element: tool }">
-              <ToolCard :tool="tool" />
-            </template>
-          </Draggable>
+        <div class="hud-reactor">
+          <ReactorCore />
         </div>
-      </transition>
 
-      <div v-if="toolStore.newTools.length > 0">
-        <h3 class="jarvis-section-title mb-5px mt-25px">
-          {{ t('home.categories.newestTools') }}
-        </h3>
-        <div class="jarvis-tool-grid">
-          <ToolCard v-for="tool in toolStore.newTools" :key="tool.name" :tool="tool" />
+        <ToolNodeCluster
+          v-for="(cluster, index) in clusterPositions"
+          :key="cluster.name"
+          :name="cluster.name"
+          :tools="cluster.components"
+          :x="cluster.x"
+          :y="cluster.y"
+          :pulsing="hoveredIndex === index"
+          @hover-start="hoveredIndex = index"
+          @hover-end="hoveredIndex = null"
+        />
+      </div>
+
+      <div v-else class="hud-stacked">
+        <div class="hud-stacked-reactor">
+          <ReactorCore />
+        </div>
+
+        <div v-for="cluster in clusters" :key="cluster.name" class="hud-stacked-cluster">
+          <div class="cluster-header">
+            <span class="bracket">[</span>{{ cluster.name }}<span class="bracket">]</span>
+          </div>
+          <div class="hud-stacked-nodes">
+            <router-link
+              v-for="tool in cluster.components"
+              :key="tool.path"
+              :to="tool.path"
+              class="hud-stacked-node"
+            >
+              <n-icon size="16" :component="tool.icon" />
+              {{ tool.name }}
+            </router-link>
+          </div>
         </div>
       </div>
 
-      <h3 class="jarvis-section-title mb-5px mt-25px">
-        {{ $t('home.categories.allTools') }}
-      </h3>
-      <div class="jarvis-tool-grid">
-        <ToolCard v-for="tool in toolStore.tools" :key="tool.name" :tool="tool" />
-      </div>
+      <AdPanel variant="vertical" class="hud-ad-side" />
     </div>
   </div>
 </template>
 
 <style scoped lang="less">
-.height-enter-active,
-.height-leave-active {
-  transition: all 0.5s ease-in-out;
-  overflow: hidden;
-  max-height: 500px;
+.hud-page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: calc(100vh - 60px);
+  padding-top: 10px;
 }
 
-.height-enter-from,
-.height-leave-to {
-  max-height: 42px;
-  overflow: hidden;
-  opacity: 0;
-  margin-bottom: 0;
+.hud-ad-top {
+  align-self: center;
 }
 
-.ghost-favorites-draggable {
-  opacity: 0.4;
-  background-color: #ccc;
-  border: 2px dashed #666;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  transform: scale(1.1);
-  animation: ghost-favorites-draggable-animation 0.2s ease-out;
+.hud-body {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex: 1;
 }
 
-@keyframes ghost-favorites-draggable-animation {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
+.hud-stage {
+  position: relative;
+  flex: 1;
+  min-height: 920px;
+  aspect-ratio: 16 / 11;
+}
+
+.hud-connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.hud-reactor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.hud-ad-side {
+  position: sticky;
+  top: 20px;
+  flex-shrink: 0;
+}
+
+.hud-stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  flex: 1;
+  padding: 10px 4px 40px;
+}
+
+.hud-stacked-reactor {
+  margin-bottom: 8px;
+}
+
+.hud-stacked-cluster {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.cluster-header {
+  font-family: var(--jarvis-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--jarvis-cyan);
+  text-shadow: 0 0 6px rgba(34, 211, 238, 0.35);
+
+  .bracket {
+    color: var(--jarvis-amber);
   }
-  100% {
-    opacity: 0.4;
-    transform: scale(1.0);
+}
+
+.hud-stacked-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hud-stacked-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(4, 9, 17, 0.6);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  color: #cfe9f1;
+  text-decoration: none;
+  font-family: var(--jarvis-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: var(--jarvis-cyan);
+    background: rgba(34, 211, 238, 0.1);
   }
 }
 </style>
