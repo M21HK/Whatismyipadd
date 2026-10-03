@@ -1,0 +1,45 @@
+/*
+ * Cinematic HUD topology map styling for the Home route: connector-line
+ * pulse animation and a heavier full-bleed vignette than the standard
+ * tactical grid background.
+ */
+
+@keyframes hud-line-pulse {
+  0%,
+  100% {
+    stroke-opacity: 0.85;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-opacity: 1;
+    stroke-dashoffset: 12;
+  }
+}
+
+.hud-connector {
+  stroke: rgba(34, 211, 238, 0.18);
+  stroke-width: 0.25;
+  fill: none;
+  transition: stroke 0.25s ease, stroke-width 0.25s ease;
+}
+
+.hud-connector.pulsing {
+  stroke: rgba(34, 211, 238, 0.9);
+  stroke-width: 0.4;
+  stroke-dasharray: 2 1.5;
+  animation: hud-line-pulse 1.4s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));
+}
+
+.hud-stage-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(4, 9, 17, 0) 0%,
+    rgba(1, 2, 3, 0.65) 55%,
+    rgba(1, 2, 3, 0.99) 100%
+  );
+}

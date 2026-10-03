@@ -8,6 +8,7 @@ import { plausible } from './plugins/plausible.plugin';
 
 import 'virtual:uno.css';
 import './styles/jarvis.css';
+import './styles/hud.css';
 
 import { naive } from './plugins/naive.plugin';
 
